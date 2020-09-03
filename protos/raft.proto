@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package protos;
+//option go_package = "github.com/wangyanga9/raft-simple/protos";
+
+message KVPair {
+    uint64 term = 1;
+    uint64 index = 2;
+    string key = 3;
+    string value = 4;
+}
+
+message Heartbeat {
+    uint64 term = 1;
+    uint64 submittedIndex = 2;
+    uint32 length = 3;
+    repeated KVPair kvPair = 4;
+}
+
+message Vote {
+    uint64 term = 1;
+}
+
+message RaftMsg {
+    enum Type {
+        UNDEFINED = 0;
+        ERROR = 1;
+        RESPONSE = 2;
+        REDIRECT = 3;
+
+        HEARTBEAT = 4;
+        VOTE = 5;
+
+        GET = 6;
+        SET = 7;
+    }
+
+    Type type = 1;
+    bytes payload = 2;
+}
+
+service RaftSupport {
+    rpc Agent(RaftMsg) returns (RaftMsg) {}
+}
