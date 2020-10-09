@@ -1,4 +1,4 @@
-![中文文档](./readme_CN.md)
+* [中文文档](./readme_CN.md)
 # Raft-Simple
 * A simple raft implementation。Only support key(string) value(string) 
 
