@@ -1,41 +1,42 @@
+![中文文档](./readme_CN.md)
 # Raft-Simple
-* 一个raft简单实现，只实现kv的存储，kv均为字符串类型
 * A simple raft implementation。Only support key(string) value(string) 
 
 ## Server
 
-### 效率优化
-* Leader的日志同步采用批量方式，100条或10ms内无新请求进入，就触发同步消息
-* 心跳机制，每次批处理最多等到100ms，防止出发超时导致领导者选举的发生
-* 消息接收与消息同步采用异步方式处理
-* Leader给从节点发送消息采用并发
-* 防止消息错乱，打造流水线式的处理
+### Efficiency Optimization
+* Send leader's Log on batch, act on 100 message or 10ms no more new message
+* heartbeat, at most wait for 100ms, avoid to elect cause by timeout
+* async on message receiving and message replicating
+* Leader send messages in parallel
+* Avoid to message disorder， using pipeline processing
 
-### 节点通信
-* 采用grpc
-*  心跳or日志同步
+### Communication between Nodes
+* Communication by GRPC between nodes
+* Heartbeat or Log replication
+* Election
 
-### 持久化
-* 简化存储，每个节点分为日志索引和日志内容
-* 文件1：
-    * 文件头 RAFT01  RAFT标识+两位版本号
-    * 日志个数 uint64 存储
-    * 日志内容索引 uint64 uint32, uint64 uint32，分别代表kv的索引地址和内容长度
-* 文件2：
-    *  存储kv日志内容，根据文件1中日志内容索引进行查询和同步
+### Persistence
+* Only storage Log Index and Log Content 
+* file1：
+    * Header RAFT01  "RAFT"+2 byte version No
+    * Log count storage by uint64
+    * Log Index, uint64 uint32, uint64 uint32，means kv index address and content length
+* file2：
+    *  storage kv Log Content, connected with file1 
 
-### 日志复制
-* Leader通过心跳将更新消息发送给Follower，Follower收到消息后将日志存到自己的日志
-* Leader收到大多数复制成功请求后，在自己节点更新状态机。并给客户端返回结果
-* Follower发现领导者已提交了某条日志项，自己还没应用，立即将这条日志项提交更新本地状态机
+### Log Replication
+* Leader send message to Follower by heartbeat, Follower save Log 
+* Leader receives responses from most Followers, update state machine on local, then response client a success
+* Follower commit the Log to state machine when it realized this Log was committed by Leader
 
 
-### 超时机制
-* 心跳超时：150-300ms内，Follower没收到Leader心跳的话，转变为Candidate，发起选举投票
-* 选举超时：150-300ms内，Candidate未收到过半(包括自己)的选票的话，选举失败，增加任期重新发起选举
+### Timeout
+* Heartbeat Tiimeout： 150-300ms，Follower will translate to Candidate, if the heartbeat was not received in time
+* Election Timeout: 150-300ms, Candidate will add the term and launch an election again, if Candidate didn't receive more than half of the votes 
 
-### 节点扩容
-* 单节点扩容(待实现)，测试暂时使用3节点
-* 日志全量复制及重放(待实现)
+### Node Expansion
+* single node expansion(support later), test on 3 nodes now
+* Log full copy and replay(support later)
 
 ## Client
