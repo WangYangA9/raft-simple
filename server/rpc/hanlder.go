@@ -73,9 +73,10 @@ func (h *RpcHandler) handleSet(req *protos.RaftMsg) (*protos.RaftMsg, error) {
 	case enum.Candidate:
 		return &protos.RaftMsg{Type: protos.RaftMsg_ERROR, Payload: []byte("ELECTING")}, nil
 	case enum.Leader:
-		//TODO 日志记录
-		//发送同步
-		//日志提交到状态机
+		//TODO
+		// 日志记录
+		// 发送同步
+		// 日志提交到状态机
 	}
 
 	return &protos.RaftMsg{Type: protos.RaftMsg_ERROR, Payload: []byte("UNKNOWN NODE ROLE")}, nil
